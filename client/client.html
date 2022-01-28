@@ -27,13 +27,34 @@
   </style>
   
   <script>
-    const handleResponse = (response) => {
+    const handleResponse = async (response) => {
+      const content = document.querySelector('#content');
+      
+      switch(response.status) {
+        case 200:
+          content.innerHTML = `<b>success</b>`;
+          break;
 
+        case 400:
+          content.innerHTML = `<b>bad request</b>`;
+          break;
+
+        case 404:
+          content.innerHTML = `<b>not found</b>`;
+          break;
+
+        default:
+          content.innerHTML = `<p>status code not implemented</p>`;
+          break;
+      }
+
+      const resObj = await response.json();
+      content.innerHTML += `<p>${resObj.message}</p>`;
     };
     
-    const sendFetch = (url) => {
-
-      //handleResponse(response);
+    const sendFetch = async (url) => {
+      const response = await fetch(url);
+      handleResponse(response);
     };
 
     const init = () => {
@@ -41,7 +62,15 @@
       const badRequestButton = document.querySelector("#badRequest");
       const notFoundButton = document.querySelector("#notFound");
 
-      
+      const badRequest = () => {
+        const userText = document.getElementById('validParam').value;
+        const url = `/badRequest?valid=${userText}`;
+        sendFetch(url);
+      }
+
+      successButton.addEventListener('click', () => sendFetch('/success'));
+      badRequestButton.onclick = badRequest;
+      notFoundButton.onclick = () => sendFetch('/somethingUnhandled');
     };
 
     window.onload = init;
@@ -57,6 +86,7 @@
     </p>
     <p>
       Go to <b>/badRequest</b> to test a <b>400 Bad Request.</b> 
+      <input id="validParam" type="textarea">
       <button id="badRequest">Bad Request</button>
     </p>
     <p>
